@@ -2,11 +2,19 @@ export type EmotionType = 'happy' | 'neutral' | 'sad' | 'angry' | 'surprised' | 
 
 export type EngagementStatus = 'Attentive' | 'Distracted' | 'Drowsy';
 
+export interface BoundingBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface EmotionData {
   emotion: EmotionType;
   confidence: number;
   engagement: EngagementStatus;
   timestamp: number;
+  boundingBox?: BoundingBox;
 }
 
 export interface StudentData {
@@ -16,6 +24,8 @@ export interface StudentData {
   engagement: EngagementStatus;
   confidence: number;
   history: EmotionData[];
+  boundingBox?: BoundingBox;
+  lastSeen: number;
 }
 
 export const emotionToEngagement = (emotion: EmotionType): EngagementStatus => {

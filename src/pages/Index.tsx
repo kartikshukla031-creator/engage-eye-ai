@@ -6,29 +6,28 @@ import EngagementChart from '@/components/EngagementChart';
 import InsightsPanel from '@/components/InsightsPanel';
 import EngagementMetrics from '@/components/EngagementMetrics';
 import { EmotionData, StudentData } from '@/types/emotion';
-import { Play, Pause, GraduationCap } from 'lucide-react';
+import { Play, Pause, GraduationCap, Users } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 const Index = () => {
   const [isActive, setIsActive] = useState(false);
   const [emotionHistory, setEmotionHistory] = useState<EmotionData[]>([]);
-  const [student, setStudent] = useState<StudentData>({
-    id: '1',
-    name: 'Demo Student',
-    currentEmotion: 'neutral',
-    engagement: 'Attentive',
-    confidence: 0,
-    history: [],
-  });
+  const [students, setStudents] = useState<StudentData[]>([]);
 
-  const handleEmotionDetected = (data: EmotionData) => {
-    setEmotionHistory(prev => [...prev, data]);
-    setStudent(prev => ({
-      ...prev,
-      currentEmotion: data.emotion,
-      engagement: data.engagement,
-      confidence: data.confidence,
-      history: [...prev.history, data],
-    }));
+  const handleStudentsDetected = (detectedStudents: StudentData[]) => {
+    setStudents(detectedStudents);
+    
+    // Add to emotion history for charts
+    detectedStudents.forEach(student => {
+      const emotionData: EmotionData = {
+        emotion: student.currentEmotion,
+        confidence: student.confidence,
+        engagement: student.engagement,
+        timestamp: Date.now(),
+        boundingBox: student.boundingBox,
+      };
+      setEmotionHistory(prev => [...prev, emotionData]);
+    });
   };
 
   const toggleTracking = () => {
@@ -75,10 +74,20 @@ const Index = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="space-y-8">
+          {/* Students Count Badge */}
+          {students.length > 0 && (
+            <div className="flex justify-center">
+              <Badge variant="secondary" className="text-lg py-2 px-4 gap-2">
+                <Users className="w-5 h-5" />
+                {students.length} {students.length === 1 ? 'Student' : 'Students'} Detected
+              </Badge>
+            </div>
+          )}
+
           {/* Camera Feed */}
           <section>
             <EmotionDetector 
-              onEmotionDetected={handleEmotionDetected}
+              onStudentsDetected={handleStudentsDetected}
               isActive={isActive}
             />
           </section>
@@ -92,11 +101,13 @@ const Index = () => {
           )}
 
           {/* Student Status */}
-          {emotionHistory.length > 0 && (
+          {students.length > 0 && (
             <section>
-              <h2 className="text-xl font-semibold mb-4 text-foreground">Student Status</h2>
+              <h2 className="text-xl font-semibold mb-4 text-foreground">Detected Students</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <StudentCard student={student} />
+                {students.map(student => (
+                  <StudentCard key={student.id} student={student} />
+                ))}
               </div>
             </section>
           )}
